@@ -42,8 +42,13 @@ def get_tasks():
     # 🔹 Filtering param
     status = request.args.get("status")
 
-    # 🔹 Base query
-    query = Task.query.filter_by(user_id=user_id)
+    # 🔥 Role-based query
+    user = User.query.get(user_id)
+
+    if user.role == "admin":
+        query = Task.query
+    else:
+        query = Task.query.filter_by(user_id=user_id)
 
     # 🔹 Apply filtering
     if status:
@@ -52,7 +57,7 @@ def get_tasks():
     # 🔹 Apply pagination
     tasks = query.paginate(page=page, per_page=limit)
 
-    # 🔹 Response same (important for tests)
+    # 🔹 Response
     result = []
     for t in tasks.items:
         result.append({
@@ -63,7 +68,6 @@ def get_tasks():
         })
 
     return jsonify(result), 200
-
 
 # ✅ Assign Task
 @task_bp.route("/<int:id>/assign", methods=["PUT"])
